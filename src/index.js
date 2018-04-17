@@ -1,24 +1,26 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import {Provider} from 'react-redux'
-import createBrowserHistory from 'history/createBrowserHistory'
+import {createStore, combineReducers, applyMiddleware} from 'redux'
+import thunkMiddleware from 'redux-thunk'
+import {MuiThemeProvider, createMuiTheme} from 'material-ui/styles'
 
 import './index.css'
-import registerServiceWorker from './registerServiceWorker'
-import createRouter from './createRouter'
-import createStore from './createStore'
-import reducers from './reducers'
+import * as reducers from './reducers'
+
+import {Web3Provider as Web3ProviderUnsafe} from 'providers/Web3ProviderUnsafe'
 import App from 'containers/App'
 
-const history = createBrowserHistory()
-const store = createStore({history, reducers})
-const router = createRouter({history})
+const theme = createMuiTheme()
+const store = createStore(combineReducers(reducers), applyMiddleware(thunkMiddleware))
 
 ReactDOM.render(
   <Provider store={store}>
-    <App>{router}</App>
+    <Web3ProviderUnsafe>
+      <MuiThemeProvider theme={theme}>
+        <App />
+      </MuiThemeProvider>
+    </Web3ProviderUnsafe>
   </Provider>,
   document.getElementById('root'),
 )
-
-registerServiceWorker()
