@@ -8,13 +8,23 @@ import {getKittensContractInstance} from 'utils/contract'
 
 export default function transferKittenToAccount(kittenId, targetAccountAddress) {
   return async dispatch => {
+    console.log(
+      'transferKittenToAccount ::',
+      'kittenId:',
+      kittenId,
+      'targetAccountAddress:',
+      targetAccountAddress,
+    )
     dispatch({type: TRANSFER_KITTEN_TO_ACCOUNT, status: STATUS_REQUEST})
-    try {
-      const CKContractInstance = getKittensContractInstance()
-      const transaction = await CKContractInstance.transfer(targetAccountAddress, kittenId)
-      dispatch({type: TRANSFER_KITTEN_TO_ACCOUNT, status: STATUS_SUCCESS, value: transaction})
-    } catch (err) {
-      dispatch({type: TRANSFER_KITTEN_TO_ACCOUNT, status: STATUS_FAILURE})
-    }
+
+    const CKContractInstance = getKittensContractInstance()
+    CKContractInstance.transfer(targetAccountAddress, kittenId, (err, result) => {
+      if (err) {
+        dispatch({type: TRANSFER_KITTEN_TO_ACCOUNT, status: STATUS_FAILURE, error: err})
+      } else {
+        console.log('transaction:', result)
+        dispatch({type: TRANSFER_KITTEN_TO_ACCOUNT, status: STATUS_SUCCESS, value: result})
+      }
+    })
   }
 }

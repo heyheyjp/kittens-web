@@ -2,13 +2,14 @@ import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 import {Flex} from 'reflexbox'
-import Tabs, {Tab} from 'material-ui/Tabs'
 import Paper from 'material-ui/Paper'
+import Tabs, {Tab} from 'material-ui/Tabs'
+import Dialog, {DialogTitle, DialogContent} from 'material-ui/Dialog'
 
 import './App.css'
 import KittenGiftForm from 'components/KittenGiftForm'
-import KittenListItem from 'components/KittenListItem'
-import TransactionListItem from 'components/TransactionListItem'
+import KittenItem from 'components/KittenItem'
+import TransactionItem from 'components/TransactionItem'
 import findKittensForOwner from 'actions/findKittensForOwner'
 import findTransactionsForAccount from 'actions/findTransactionsForAccount'
 import transferKittenToAccount from 'actions/transferKittenToAccount'
@@ -25,13 +26,15 @@ class App extends Component {
     super(props)
     this.state = {
       selectedTab: TABS.MY_KITTENS,
-      giftKittenId: null,
+      giftKitten: null,
       giftKittenModalShowing: false,
     }
-    this.handleKittenGiftSubmitted = this.handleKittenGiftSubmitted.bind(this)
+    this.handleSelectKittenToGift = this.handleSelectKittenToGift.bind(this)
+    this.handleSubmitKittenGift = this.handleSubmitKittenGift.bind(this)
+    this.handleCancelKittenGift = this.handleCancelKittenGift.bind(this)
     this.renderHeader = this.renderHeader.bind(this)
     this.renderAccountInfo = this.renderAccountInfo.bind(this)
-    this.renderAccountKittenList = this.renderAccountKittenList.bind(this)
+    this.renderAccountKittens = this.renderAccountKittens.bind(this)
     this.renderAccountActivity = this.renderAccountActivity.bind(this)
     this.renderGiftKittenModal = this.renderGiftKittenModal.bind(this)
   }
@@ -46,8 +49,28 @@ class App extends Component {
     this.props.unsubscribeFromTransactionUpdates(this.props.currentAccountAddress)
   }
 
-  handleKittenGiftSubmitted(selectedKitten, targetAccountAddress) {
-    this.props.transferKittenToAccount(selectedKitten.id, targetAccountAddress)
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.currentAccountAddress !== this.props.currentAccountAddress) {
+      this.props.unsubscribeFromTransactionUpdates(this.props.currentAccountAddress)
+
+      this.props.findKittensForOwner(nextProps.currentAccountAddress)
+      this.props.findTransactionsForAccount(nextProps.currentAccountAddress)
+      this.props.subscribeToTransactionUpdates(nextProps.currentAccountAddress)
+    }
+  }
+
+  handleSelectKittenToGift(selectedKitten) {
+    this.setState({giftKitten: selectedKitten, giftKittenModalShowing: true})
+  }
+
+  handleSubmitKittenGift(selectedKitten, targetAccountAddress) {
+    this.props
+      .transferKittenToAccount(selectedKitten.id, targetAccountAddress)
+      .then(() => this.setState({giftKitten: null, giftKittenModalShowing: false}))
+  }
+
+  handleCancelKittenGift() {
+    this.setState({giftKitten: null, giftKittenModalShowing: false})
   }
 
   renderHeader() {
@@ -60,40 +83,68 @@ class App extends Component {
   }
 
   renderAccountInfo() {
+    const {selectedTab} = this.state
     return (
-      <div className="AccountInfo">
+      <Flex className="AccountInfo" justify="center" column>
         <Tabs
-          value={this.state.selectedTab}
+          value={selectedTab}
           onChange={(e, value) => this.setState({selectedTab: value})}
           indicatorColor="primary">
-          <Tab label="My Kittens" value={TABS.MY_KITTENS}>
-            {this.renderAccountKittenList()}
-          </Tab>
-          <Tab label="Activity" value={TABS.ACTIVITY}>
-            {this.renderAccountActivity()}
-          </Tab>
+          <Tab label="My Kittens" value={TABS.MY_KITTENS} />
+          <Tab label="Activity" value={TABS.ACTIVITY} />
         </Tabs>
+        <div className="AccountInfoTabContent">
+          {selectedTab === TABS.MY_KITTENS && this.renderAccountKittens()}
+          {selectedTab === TABS.ACTIVITY && this.renderAccountActivity()}
+        </div>
+      </Flex>
+    )
+  }
+
+  renderAccountKittens() {
+    return (
+      <div>
+        {this.props.currentAccountKittens.map((kitten, i) => (
+          <KittenItem
+            key={`kitten-${i}`}
+            kitten={kitten}
+            onSelectKittenToGift={this.handleSelectKittenToGift}
+          />
+        ))}
       </div>
     )
   }
 
-  renderAccountKittenList() {
-    this.props.currentAccountKittens.map((kitten, i) => (
-      <KittenListItem key={`kitten-${i}`} kitten={kitten} />
-    ))
-  }
-
   renderAccountActivity() {
-    this.props.currentAccountTransactions.map((tx, i) => (
-      <TransactionListItem key={`tx-${i}`} transaction={tx} />
-    ))
+    const {currentAccountTransactions} = this.props
+    if (currentAccountTransactions.length === 0) {
+      return <div>No transactions recorded.</div>
+    }
+    return (
+      <div>
+        {currentAccountTransactions.map((tx, i) => (
+          <TransactionItem key={`tx-${i}`} transaction={tx} />
+        ))}
+      </div>
+    )
   }
 
-  renderGiftKittenModal(selectedKitten) {
+  renderGiftKittenModal() {
     if (!this.state.giftKittenModalShowing) {
       return null
     }
-    return <KittenGiftForm kitten={selectedKitten} />
+    return (
+      <Dialog open={this.state.giftKittenModalShowing} fullWidth>
+        <DialogTitle>Send kitten as a gift</DialogTitle>
+        <DialogContent>
+          <KittenGiftForm
+            kitten={this.state.giftKitten}
+            onCancelKittenGift={this.handleCancelKittenGift}
+            onSubmitKittenGift={this.handleSubmitKittenGift}
+          />
+        </DialogContent>
+      </Dialog>
+    )
   }
 
   render() {
@@ -122,10 +173,8 @@ App.contextTypes = {
 function mapStateToProps(state) {
   const {app, kittens, transactions} = state
   const currentAccountAddress = app.currentAccountAddress
-  const currentAccountKittens = Object.values(kittens.byOwnerAddress[currentAccountAddress] || {})
-  const currentAccountTransactions = Object.values(
-    transactions.byOwnerAddress[currentAccountAddress] || {},
-  )
+  const currentAccountKittens = Object.values(kittens.byId)
+  const currentAccountTransactions = Object.values(transactions.byHash)
   return {
     currentAccountAddress,
     currentAccountKittens,

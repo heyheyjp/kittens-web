@@ -7,7 +7,6 @@ import {
 
 const initialState = {
   byId: {},
-  byOwnerAddress: {},
 }
 
 export default function kittens(state = initialState, action) {
@@ -22,14 +21,7 @@ export default function kittens(state = initialState, action) {
           result[kitten.id] = kitten
           return result
         }, {})
-        const byOwnerAddress = action.value.reduce((result, kitten) => {
-          const {ownerAddress} = kitten
-          if (ownerAddress) {
-            byOwnerAddress[kitten.ownerAddress] = byOwnerAddress[kitten.ownerAddress] || {}
-            byOwnerAddress[kitten.ownerAddress][kitten.hash] = kitten
-          }
-        })
-        return {byId, byOwnerAddress}
+        return {byId}
       } else {
         return state
       }

@@ -12,8 +12,8 @@ export default function findKittensForOwner(accountAddress) {
     dispatch({type: FIND_KITTENS_FOR_OWNER, status: STATUS_REQUEST})
     try {
       const url = `${process.env.REACT_APP_API_BASE_URL}/accounts/${accountAddress}/kittens`
-      const kittens = await axios.get(url)
-      dispatch({type: FIND_KITTENS_FOR_OWNER, status: STATUS_SUCCESS, value: kittens})
+      const result = await axios.get(url)
+      dispatch({type: FIND_KITTENS_FOR_OWNER, status: STATUS_SUCCESS, value: result.data})
     } catch (err) {
       dispatch({type: FIND_KITTENS_FOR_OWNER, status: STATUS_FAILURE})
     }

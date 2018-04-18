@@ -1,6 +1,9 @@
 import socketCluster from 'socketcluster-client'
 
-export const socket = socketCluster.connect()
+export const socket = socketCluster.connect({
+  path: process.env.REACT_APP_API_SOCKET_PATH,
+  host: process.env.REACT_APP_API_SOCKET_HOST,
+})
 socket.on('connect', () => console.log('Socket connected'))
 socket.on('disconnect', () => console.log('Socket disconnected; trying to reconnect...'))
 socket.on('connectAbort', () => null)
