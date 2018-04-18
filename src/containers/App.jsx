@@ -5,6 +5,7 @@ import {Flex} from 'reflexbox'
 import Tabs, {Tab} from 'material-ui/Tabs'
 import Paper from 'material-ui/Paper'
 
+import './App.css'
 import KittenGiftForm from 'components/KittenGiftForm'
 import KittenListItem from 'components/KittenListItem'
 import TransactionListItem from 'components/TransactionListItem'
@@ -27,7 +28,7 @@ class App extends Component {
       giftKittenId: null,
       giftKittenModalShowing: false,
     }
-    this.handleGiftKittenSubmitted = this.handleGiftKittenSubmitted.bind(this)
+    this.handleKittenGiftSubmitted = this.handleKittenGiftSubmitted.bind(this)
     this.renderHeader = this.renderHeader.bind(this)
     this.renderAccountInfo = this.renderAccountInfo.bind(this)
     this.renderAccountKittenList = this.renderAccountKittenList.bind(this)
@@ -45,32 +46,34 @@ class App extends Component {
     this.props.unsubscribeFromTransactionUpdates(this.props.currentAccountAddress)
   }
 
-  handleGiftKittenSubmitted(selectedKitten, targetAccountAddress) {
+  handleKittenGiftSubmitted(selectedKitten, targetAccountAddress) {
     this.props.transferKittenToAccount(selectedKitten.id, targetAccountAddress)
   }
 
   renderHeader() {
     return (
       <Flex column align="center">
-        <div>Welcome to CryptoKittens!</div>
-        <div>Account #: {this.props.currentAccountAddress}</div>
+        <h4>Welcome to CryptoKittens!</h4>
+        <div className="Subtitle">Account: {this.props.currentAccountAddress}</div>
       </Flex>
     )
   }
 
   renderAccountInfo() {
     return (
-      <Tabs
-        value={this.state.selectedTab}
-        onChange={(e, value) => this.setState({selectedTab: value})}
-      >
-        <Tab label="My Kittens" value={TABS.MY_KITTENS}>
-          {this.renderAccountKittenList()}
-        </Tab>
-        <Tab label="Activity" value={TABS.ACTIVITY}>
-          {this.renderAccountActivity()}
-        </Tab>
-      </Tabs>
+      <div className="AccountInfo">
+        <Tabs
+          value={this.state.selectedTab}
+          onChange={(e, value) => this.setState({selectedTab: value})}
+          indicatorColor="primary">
+          <Tab label="My Kittens" value={TABS.MY_KITTENS}>
+            {this.renderAccountKittenList()}
+          </Tab>
+          <Tab label="Activity" value={TABS.ACTIVITY}>
+            {this.renderAccountActivity()}
+          </Tab>
+        </Tabs>
+      </div>
     )
   }
 
@@ -96,7 +99,7 @@ class App extends Component {
   render() {
     return (
       <Paper className="App" elevation={0}>
-        <Flex column auto align="center">
+        <Flex className="Content" column auto align="center">
           {this.renderHeader()}
           {this.renderGiftKittenModal()}
           {this.renderAccountInfo()}
@@ -121,7 +124,7 @@ function mapStateToProps(state) {
   const currentAccountAddress = app.currentAccountAddress
   const currentAccountKittens = Object.values(kittens.byOwnerAddress[currentAccountAddress] || {})
   const currentAccountTransactions = Object.values(
-    transactions.byAccountAddress[currentAccountAddress] || {},
+    transactions.byOwnerAddress[currentAccountAddress] || {},
   )
   return {
     currentAccountAddress,

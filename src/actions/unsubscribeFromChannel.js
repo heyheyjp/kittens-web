@@ -1,5 +1,9 @@
-export default function unsubscribeFromChannel(channel, ...channelOptions) {
+import {unsubscribeFromChannel as socketSubscribeToChannel} from 'utils/socket'
+import {UNSUBSCRIBE_FROM_CHANNEL} from 'utils/constants'
+
+export default function unsubscribeFromChannel(channel) {
   return dispatch => {
-    return Promise.resolve()
+    socketSubscribeToChannel(channel)
+    dispatch({type: UNSUBSCRIBE_FROM_CHANNEL})
   }
 }

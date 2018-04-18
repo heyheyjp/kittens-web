@@ -1,5 +1,9 @@
-export default function subscribeToChannel(channel, ...channelOptions) {
+import {subscribeToChannel as socketSubscribeToChannel} from 'utils/socket'
+import {SUBSCRIBE_TO_CHANNEL} from 'utils/constants'
+
+export default function subscribeToChannel(channel) {
   return dispatch => {
-    return Promise.resolve()
+    socketSubscribeToChannel(channel)
+    dispatch({type: SUBSCRIBE_TO_CHANNEL})
   }
 }
