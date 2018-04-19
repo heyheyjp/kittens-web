@@ -89,7 +89,7 @@ class App extends Component {
         </Flex>
       )
     }
-    return <Flex>No transfers recorded.</Flex>
+    return <Flex>No pending transfers recorded.</Flex>
   }
 
   renderAccountKittens() {
