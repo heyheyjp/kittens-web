@@ -11,7 +11,7 @@ export default function createPendingTransfer(values) {
   return async dispatch => {
     dispatch({type: CREATE_PENDING_TRANSFER, status: STATUS_REQUEST})
     try {
-      const url = `${process.env.REACT_APP_API_BASE_URL}/pending-transfers`
+      const url = `//${process.env.REACT_APP_API_HOST}/pending-transfers`
       const result = await axios.post(url, values)
       dispatch({type: CREATE_PENDING_TRANSFER, status: STATUS_SUCCESS, value: result.data})
     } catch (err) {

@@ -11,7 +11,7 @@ export default function findTransfersForAccount(accountAddress) {
   return async dispatch => {
     dispatch({type: FIND_TRANSFERS_FOR_ACCOUNT, status: STATUS_REQUEST})
     try {
-      const url = `${process.env.REACT_APP_API_BASE_URL}/accounts/${accountAddress}/transfers`
+      const url = `//${process.env.REACT_APP_API_HOST}/accounts/${accountAddress}/transfers`
       const result = await axios.get(url)
       dispatch({type: FIND_TRANSFERS_FOR_ACCOUNT, status: STATUS_SUCCESS, value: result.data})
     } catch (err) {
