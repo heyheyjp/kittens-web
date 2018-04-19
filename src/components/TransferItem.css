@@ -3,4 +3,5 @@
   text-overflow: ellipsis;
   width: 150px;
   white-space: nowrap;
+  margin-bottom: 20px;
 }
