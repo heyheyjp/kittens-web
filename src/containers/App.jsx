@@ -9,9 +9,9 @@ import Dialog, {DialogTitle, DialogContent} from 'material-ui/Dialog'
 import './App.css'
 import KittenGiftForm from 'components/KittenGiftForm'
 import KittenItem from 'components/KittenItem'
-import TransactionItem from 'components/TransactionItem'
+import TransferItem from 'components/TransferItem'
 import findKittensForOwner from 'actions/findKittensForOwner'
-import findTransactionsForAccount from 'actions/findTransactionsForAccount'
+import findTransfersForAccount from 'actions/findTransfersForAccount'
 import transferKittenToAccount from 'actions/transferKittenToAccount'
 import subscribeToChannel from 'actions/subscribeToChannel'
 import unsubscribeFromChannel from 'actions/unsubscribeFromChannel'
@@ -41,21 +41,21 @@ class App extends Component {
 
   componentDidMount() {
     this.props.findKittensForOwner(this.props.currentAccountAddress)
-    this.props.findTransactionsForAccount(this.props.currentAccountAddress)
-    this.props.subscribeToTransactionUpdates(this.props.currentAccountAddress)
+    this.props.findTransfersForAccount(this.props.currentAccountAddress)
+    this.props.subscribeToTransferUpdates(this.props.currentAccountAddress)
   }
 
   componentWillUnmount() {
-    this.props.unsubscribeFromTransactionUpdates(this.props.currentAccountAddress)
+    this.props.unsubscribeFromTransferUpdates(this.props.currentAccountAddress)
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.currentAccountAddress !== this.props.currentAccountAddress) {
-      this.props.unsubscribeFromTransactionUpdates(this.props.currentAccountAddress)
+      this.props.unsubscribeFromTransferUpdates(this.props.currentAccountAddress)
 
       this.props.findKittensForOwner(nextProps.currentAccountAddress)
-      this.props.findTransactionsForAccount(nextProps.currentAccountAddress)
-      this.props.subscribeToTransactionUpdates(nextProps.currentAccountAddress)
+      this.props.findTransferForAccount(nextProps.currentAccountAddress)
+      this.props.subscribeToTransferUpdates(nextProps.currentAccountAddress)
     }
   }
 
@@ -116,14 +116,14 @@ class App extends Component {
   }
 
   renderAccountActivity() {
-    const {currentAccountTransactions} = this.props
-    if (currentAccountTransactions.length === 0) {
-      return <div>No transactions recorded.</div>
+    const {currentAccountTransfers} = this.props
+    if (currentAccountTransfers.length === 0) {
+      return <div>No transfers recorded.</div>
     }
     return (
       <div>
-        {currentAccountTransactions.map((tx, i) => (
-          <TransactionItem key={`tx-${i}`} transaction={tx} />
+        {currentAccountTransfers.map((transfer, i) => (
+          <TransferItem key={`transfer-${i}`} transfer={transfer} />
         ))}
       </div>
     )
@@ -163,7 +163,7 @@ class App extends Component {
 App.propTypes = {
   currentAccountAddress: PropTypes.string,
   currentAccountKittens: PropTypes.array.isRequired,
-  currentAccountTransactions: PropTypes.array.isRequired,
+  currentAccountTransfers: PropTypes.array.isRequired,
 }
 
 App.contextTypes = {
@@ -171,28 +171,27 @@ App.contextTypes = {
 }
 
 function mapStateToProps(state) {
-  const {app, kittens, transactions} = state
+  const {app, kittens, transfers} = state
   const currentAccountAddress = app.currentAccountAddress
   const currentAccountKittens = Object.values(kittens.byId)
-  const currentAccountTransactions = Object.values(transactions.byHash)
+  const currentAccountTransfers = Object.values(transfers.byHash)
   return {
     currentAccountAddress,
     currentAccountKittens,
-    currentAccountTransactions,
+    currentAccountTransfers,
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     findKittensForOwner: accountAddress => dispatch(findKittensForOwner(accountAddress)),
-    findTransactionsForAccount: accountAddress =>
-      dispatch(findTransactionsForAccount(accountAddress)),
+    findTransfersForAccount: accountAddress => dispatch(findTransfersForAccount(accountAddress)),
     transferKittenToAccount: (kittenId, targetAccountAddress) =>
       dispatch(transferKittenToAccount(kittenId, targetAccountAddress)),
-    subscribeToTransactionUpdates: accountAddress =>
-      dispatch(subscribeToChannel('transactionUpdatesForAccount', accountAddress)),
-    unsubscribeFromTransactionUpdates: accountAddress =>
-      dispatch(unsubscribeFromChannel('transactionUpdatesForAccount', accountAddress)),
+    subscribeToTransferUpdates: accountAddress =>
+      dispatch(subscribeToChannel('transferUpdatesForAccount', accountAddress)),
+    unsubscribeFromTransferUpdates: accountAddress =>
+      dispatch(unsubscribeFromChannel('transferUpdatesForAccount', accountAddress)),
   }
 }
 

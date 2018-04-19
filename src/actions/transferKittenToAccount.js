@@ -8,13 +8,6 @@ import {getKittensContractInstance} from 'utils/contract'
 
 export default function transferKittenToAccount(kittenId, targetAccountAddress) {
   return async dispatch => {
-    console.log(
-      'transferKittenToAccount ::',
-      'kittenId:',
-      kittenId,
-      'targetAccountAddress:',
-      targetAccountAddress,
-    )
     dispatch({type: TRANSFER_KITTEN_TO_ACCOUNT, status: STATUS_REQUEST})
 
     const CKContractInstance = getKittensContractInstance()
