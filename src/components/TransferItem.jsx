@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
-import {Flex} from 'reflexbox'
+import {Flex, Box} from 'reflexbox'
 
 import './TransferItem.css'
 
@@ -11,10 +11,10 @@ class TransferItem extends Component {
       return null
     }
     return (
-      <Flex className="TransferItem" justify="space-between">
-        {transfer.txHash}
-        {transfer.to}
-        {transfer.status}
+      <Flex className="TransferItem" justify="space-between" column>
+        <Box className="TransferItemContent">{transfer.txHash}</Box>
+        <Box className="TransferItemContent">{transfer.to}</Box>
+        <Box className="TransferItemContent">{transfer.status}</Box>
       </Flex>
     )
   }
@@ -23,7 +23,7 @@ class TransferItem extends Component {
 TransferItem.propTypes = {
   transfer: PropTypes.shape({
     txHash: PropTypes.string.isRequired,
-    to: PropTypes.string.isRequired,
+    to: PropTypes.string,
     status: PropTypes.string.isRequired,
   }),
 }

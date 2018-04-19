@@ -1,5 +1,5 @@
 import trackTransfer from './trackTransfer'
-import {getKittensContractInstance} from 'utils/contract'
+import {getKittensContractInstance} from 'clients/contract'
 import {
   TRANSFER_KITTEN_TO_ACCOUNT,
   STATUS_REQUEST,

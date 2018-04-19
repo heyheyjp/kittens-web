@@ -34,10 +34,12 @@ class KittenItem extends Component {
       return null
     }
     return (
-      <Flex className="KittenItem">
-        <img src={kitten.image_url_cdn} alt="Kitten" />
-        <Flex align="center">{kitten.name || kitten.id}</Flex>
-        <Flex align="center">{this.renderGiftButton()}</Flex>
+      <Flex className="KittenItem" justify="flex-start">
+        <Flex align="center" column>
+          <img className="KittenAvatar" src={kitten.image_url_cdn} alt="Kitten" />
+          <Flex align="center">{kitten.name || kitten.id}</Flex>
+          <Flex align="center">{this.renderGiftButton()}</Flex>
+        </Flex>
       </Flex>
     )
   }
