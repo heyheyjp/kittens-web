@@ -1,4 +1,4 @@
-import trackTransfer from './trackTransfer'
+import createPendingTransfer from './createPendingTransfer'
 import {getKittensContractInstance} from 'clients/contract'
 import {
   TRANSFER_KITTEN_TO_ACCOUNT,
@@ -7,18 +7,19 @@ import {
   STATUS_FAILURE,
 } from 'utils/constants'
 
-export default function transferKittenToAccount(kittenId, targetAccountAddress) {
+export default function transferKittenToAccount(kittenId, fromAccountAddress, toAccountAddress) {
   return async dispatch => {
     dispatch({type: TRANSFER_KITTEN_TO_ACCOUNT, status: STATUS_REQUEST})
 
     const CKContractInstance = getKittensContractInstance()
-    CKContractInstance.transfer(targetAccountAddress, kittenId, async (err, txHash) => {
+    CKContractInstance.transfer(toAccountAddress, kittenId, async (err, txHash) => {
       if (err) {
         dispatch({type: TRANSFER_KITTEN_TO_ACCOUNT, status: STATUS_FAILURE, error: err})
       } else {
-        console.log('transaction:', txHash)
         dispatch({type: TRANSFER_KITTEN_TO_ACCOUNT, status: STATUS_SUCCESS, value: txHash})
-        dispatch(trackTransfer(txHash))
+        dispatch(
+          createPendingTransfer({txHash, kittenId, from: fromAccountAddress, to: toAccountAddress}),
+        )
       }
     })
   }

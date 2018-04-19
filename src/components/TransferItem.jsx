@@ -12,9 +12,15 @@ class TransferItem extends Component {
     }
     return (
       <Flex className="TransferItem" justify="space-between" column>
-        <Box className="TransferItemContent">{transfer.txHash}</Box>
-        <Box className="TransferItemContent">{transfer.to}</Box>
-        <Box className="TransferItemContent">{transfer.status}</Box>
+        <Box className="TransferItemLine">
+          <strong>Tx:</strong> {transfer.txHash}
+        </Box>
+        <Box className="TransferItemLine">
+          <strong>Sent to:</strong> {transfer.to}
+        </Box>
+        <Box className="TransferItemLine">
+          <strong>Status:</strong> {transfer.status}
+        </Box>
       </Flex>
     )
   }

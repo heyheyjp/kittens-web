@@ -16,10 +16,11 @@ class KittenItem extends Component {
       return null
     }
     return (
-      <div className="GiftButtonContainer">
+      <div className="giftButton">
         <Button
           color="secondary"
-          onClick={() => this.props.onSelectKittenToGift(this.props.kitten)}>
+          onClick={() => this.props.onSelectKittenToGift(this.props.kitten)}
+          disabled={this.props.giftDisabled}>
           <span>
             <i className="fa fa-gift" /> Gift
           </span>
@@ -35,10 +36,14 @@ class KittenItem extends Component {
     }
     return (
       <Flex className="KittenItem" justify="flex-start">
-        <Flex align="center" column>
-          <img className="KittenAvatar" src={kitten.image_url_cdn} alt="Kitten" />
-          <Flex align="center">{kitten.name || kitten.id}</Flex>
-          <Flex align="center">{this.renderGiftButton()}</Flex>
+        <Flex className="KittenItemContent" align="center" column>
+          <Flex>
+            <img className="avatar" src={kitten.image_url_cdn} alt="Kitten" />
+          </Flex>
+          <Flex className="name" align="center">
+            {kitten.name || kitten.id}
+          </Flex>
+          <Flex>{this.renderGiftButton()}</Flex>
         </Flex>
       </Flex>
     )
@@ -52,6 +57,7 @@ KittenItem.propTypes = {
     created_at: PropTypes.string,
   }),
   onSelectKittenToGift: PropTypes.func,
+  giftDisabled: PropTypes.bool,
 }
 
 export default KittenItem

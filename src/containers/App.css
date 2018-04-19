@@ -6,10 +6,18 @@
   font-size: .8em;
 }
 
+.SectionTitle {
+  white-space: nowrap;
+}
+
 .AccountInfo {
   margin-top: 40px;
 }
 
-.AccountInfoTabContent {
-  margin-top: 20px;
+.AccountInfoColumn {
+  margin: 20px 50px;
+}
+
+.AccountTransfers {
+  margin-top: 30px;
 }

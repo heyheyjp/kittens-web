@@ -1,8 +1,6 @@
-.TransferItem {
-  width: 100%;
-}
-
-.TransferItemContent {
+.TransferItemLine {
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 150px;
+  white-space: nowrap;
 }

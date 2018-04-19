@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
-import {Flex, Box} from 'reflexbox'
+import {Flex} from 'reflexbox'
 import Paper from 'material-ui/Paper'
 import Dialog, {DialogTitle, DialogContent} from 'material-ui/Dialog'
 
@@ -33,10 +33,11 @@ class App extends Component {
     this.renderGiftKittenModal = this.renderGiftKittenModal.bind(this)
   }
 
-  refreshData() {
-    this.props.findKittensForOwner(this.props.currentAccountAddress)
-    this.props.findTransfersForAccount(this.props.currentAccountAddress)
-    this.props.subscribeToTransferUpdates(this.props.currentAccountAddress, {
+  refreshData(overrides) {
+    const {accountAddress = this.props.currentAccountAddress} = overrides || {}
+    this.props.findKittensForOwner(accountAddress)
+    this.props.findTransfersForAccount(accountAddress)
+    this.props.subscribeToTransferUpdates(accountAddress, {
       onData: this.refreshData,
     })
   }
@@ -52,7 +53,7 @@ class App extends Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.currentAccountAddress !== this.props.currentAccountAddress) {
       this.props.unsubscribeFromTransferUpdates(this.props.currentAccountAddress)
-      this.refreshData()
+      this.refreshData({accountAddress: nextProps.currentAccountAddress})
     }
   }
 
@@ -62,7 +63,11 @@ class App extends Component {
 
   handleSubmitKittenGift(selectedKitten, targetAccountAddress) {
     this.props
-      .transferKittenToAccount(selectedKitten.id, targetAccountAddress)
+      .transferKittenToAccount(
+        selectedKitten.id,
+        this.props.currentAccountAddress,
+        targetAccountAddress,
+      )
       .then(() => this.setState({giftKitten: null, giftKittenModalShowing: false}))
   }
 
@@ -70,56 +75,63 @@ class App extends Component {
     this.setState({giftKitten: null, giftKittenModalShowing: false})
   }
 
-  renderHeader() {
+  renderAccountTransfers() {
+    const {currentAccountTransfers, hasInitialized} = this.props
+    if (!hasInitialized) {
+      return <div>Loading...</div>
+    }
+    if (currentAccountTransfers.length) {
+      return (
+        <Flex className="AccountTransfers" column>
+          {currentAccountTransfers.map((transfer, i) => (
+            <TransferItem key={`transfer-${i}`} transfer={transfer} />
+          ))}
+        </Flex>
+      )
+    }
+    return <Flex>No transfers recorded.</Flex>
+  }
+
+  renderAccountKittens() {
+    const {currentAccountKittens, currentAccountTransfers, hasInitialized} = this.props
+    if (!hasInitialized) {
+      return <div>Loading...</div>
+    }
     return (
-      <Flex column align="center">
-        <h4>Welcome to CryptoKittens!</h4>
-        <div className="Subtitle">Account: {this.props.currentAccountAddress}</div>
+      <Flex column>
+        {currentAccountKittens.map((kitten, i) => {
+          // TODO: make way more efficient; this is silly
+          const hasPendingTransaction = currentAccountTransfers.find(
+            transfer => transfer.kittenId === kitten.id && transfer.status === 'PENDING',
+          )
+          return (
+            <KittenItem
+              key={`kitten-${i}`}
+              kitten={kitten}
+              onSelectKittenToGift={this.handleSelectKittenToGift}
+              giftDisabled={hasPendingTransaction}
+            />
+          )
+        })}
       </Flex>
     )
   }
 
   renderAccountInfo() {
+    const {currentAccountKittens, currentAccountTransfers, hasInitialized} = this.props
+    const kittenCount = hasInitialized ? `(${currentAccountKittens.length})` : ''
+    const transferCount = hasInitialized ? `(${currentAccountTransfers.length})` : ''
     return (
       <Flex className="AccountInfo" justify="center" auto>
-        <Box w={2 / 3}>{this.renderAccountKittens()}</Box>
-        <Box w={1 / 3}>{this.renderAccountTransfers()}</Box>
+        <Flex className="AccountInfoColumn" column>
+          <h5 className="SectionTitle">{`My Kittens ${kittenCount}`}</h5>
+          {this.renderAccountKittens()}
+        </Flex>
+        <Flex className="AccountInfoColumn" column>
+          <h5 className="SectionTitle">{`Transfers ${transferCount}`}</h5>
+          {this.renderAccountTransfers()}
+        </Flex>
       </Flex>
-    )
-  }
-
-  renderAccountKittens() {
-    const {currentAccountKittens} = this.props
-    return (
-      <Box>
-        <h5>{`My Kittens (${currentAccountKittens.length})`}</h5>
-        {currentAccountKittens.map((kitten, i) => (
-          <KittenItem
-            key={`kitten-${i}`}
-            kitten={kitten}
-            onSelectKittenToGift={this.handleSelectKittenToGift}
-          />
-        ))}
-      </Box>
-    )
-  }
-
-  renderAccountTransfers() {
-    const {currentAccountTransfers} = this.props
-    const transferContent = currentAccountTransfers.length ? (
-      <div>
-        {currentAccountTransfers.map((transfer, i) => (
-          <TransferItem key={`transfer-${i}`} transfer={transfer} />
-        ))}
-      </div>
-    ) : (
-      <Box>No transfers recorded.</Box>
-    )
-    return (
-      <Box>
-        <h5>{`Transfers (${currentAccountTransfers.length})`}</h5>
-        {transferContent}
-      </Box>
     )
   }
 
@@ -143,10 +155,19 @@ class App extends Component {
     )
   }
 
+  renderHeader() {
+    return (
+      <Flex column align="center">
+        <h4>Welcome to CryptoKittens!</h4>
+        <div className="Subtitle">Account: {this.props.currentAccountAddress}</div>
+      </Flex>
+    )
+  }
+
   render() {
     return (
       <Paper className="App" elevation={0}>
-        <Flex className="Content" column auto align="center">
+        <Flex className="Content" align="center" column auto>
           {this.renderHeader()}
           {this.renderGiftKittenModal()}
           {this.renderAccountInfo()}
@@ -160,6 +181,7 @@ App.propTypes = {
   currentAccountAddress: PropTypes.string,
   currentAccountKittens: PropTypes.array.isRequired,
   currentAccountTransfers: PropTypes.array.isRequired,
+  hasInitialized: PropTypes.bool.isRequired,
 }
 
 App.contextTypes = {
@@ -171,10 +193,12 @@ function mapStateToProps(state) {
   const currentAccountAddress = app.currentAccountAddress
   const currentAccountKittens = Object.values(kittens.byId)
   const currentAccountTransfers = Object.values(transfers.byHash)
+  const hasInitialized = Boolean(kittens.hasLoaded && transfers.hasLoaded)
   return {
     currentAccountAddress,
     currentAccountKittens,
     currentAccountTransfers,
+    hasInitialized,
   }
 }
 
@@ -182,8 +206,8 @@ function mapDispatchToProps(dispatch) {
   return {
     findKittensForOwner: accountAddress => dispatch(findKittensForOwner(accountAddress)),
     findTransfersForAccount: accountAddress => dispatch(findTransfersForAccount(accountAddress)),
-    transferKittenToAccount: (kittenId, targetAccountAddress) =>
-      dispatch(transferKittenToAccount(kittenId, targetAccountAddress)),
+    transferKittenToAccount: (kittenId, fromAccountAddress, targetAccountAddress) =>
+      dispatch(transferKittenToAccount(kittenId, fromAccountAddress, targetAccountAddress)),
     subscribeToTransferUpdates: (accountAddress, options) =>
       dispatch(subscribeToChannel(`accountTransferUpdated-${accountAddress}`, options)),
     unsubscribeFromTransferUpdates: (accountAddress, options) =>
