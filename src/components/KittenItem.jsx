@@ -20,7 +20,9 @@ class KittenItem extends Component {
         <Button
           color="secondary"
           onClick={() => this.props.onSelectKittenToGift(this.props.kitten)}>
-          <span>Send Gift</span>
+          <span>
+            <i className="fa fa-gift" /> Gift
+          </span>
         </Button>
       </div>
     )
@@ -34,7 +36,7 @@ class KittenItem extends Component {
     return (
       <Flex className="KittenItem">
         <img src={kitten.image_url_cdn} alt="Kitten" />
-        <Flex align="center">{kitten.id}</Flex>
+        <Flex align="center">{kitten.name || kitten.id}</Flex>
         <Flex align="center">{this.renderGiftButton()}</Flex>
       </Flex>
     )

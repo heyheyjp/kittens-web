@@ -18,7 +18,7 @@ import unsubscribeFromChannel from 'actions/unsubscribeFromChannel'
 
 const TABS = {
   MY_KITTENS: 1,
-  ACTIVITY: 2,
+  TRANSFERS: 2,
 }
 
 class App extends Component {
@@ -35,7 +35,7 @@ class App extends Component {
     this.renderHeader = this.renderHeader.bind(this)
     this.renderAccountInfo = this.renderAccountInfo.bind(this)
     this.renderAccountKittens = this.renderAccountKittens.bind(this)
-    this.renderAccountActivity = this.renderAccountActivity.bind(this)
+    this.renderAccountTransfers = this.renderAccountTransfers.bind(this)
     this.renderGiftKittenModal = this.renderGiftKittenModal.bind(this)
   }
 
@@ -54,7 +54,7 @@ class App extends Component {
       this.props.unsubscribeFromTransferUpdates(this.props.currentAccountAddress)
 
       this.props.findKittensForOwner(nextProps.currentAccountAddress)
-      this.props.findTransferForAccount(nextProps.currentAccountAddress)
+      this.props.findTransfersForAccount(nextProps.currentAccountAddress)
       this.props.subscribeToTransferUpdates(nextProps.currentAccountAddress)
     }
   }
@@ -84,18 +84,19 @@ class App extends Component {
 
   renderAccountInfo() {
     const {selectedTab} = this.state
+    const {currentAccountKittens = [], currentAccountTransfers = []} = this.props
     return (
       <Flex className="AccountInfo" justify="center" column>
         <Tabs
           value={selectedTab}
           onChange={(e, value) => this.setState({selectedTab: value})}
           indicatorColor="primary">
-          <Tab label="My Kittens" value={TABS.MY_KITTENS} />
-          <Tab label="Activity" value={TABS.ACTIVITY} />
+          <Tab label={`My Kittens (${currentAccountKittens.length})`} value={TABS.MY_KITTENS} />
+          <Tab label={`Transfers (${currentAccountTransfers.length})`} value={TABS.TRANSFERS} />
         </Tabs>
         <div className="AccountInfoTabContent">
           {selectedTab === TABS.MY_KITTENS && this.renderAccountKittens()}
-          {selectedTab === TABS.ACTIVITY && this.renderAccountActivity()}
+          {selectedTab === TABS.TRANSFERS && this.renderAccountTransfers()}
         </div>
       </Flex>
     )
@@ -115,7 +116,7 @@ class App extends Component {
     )
   }
 
-  renderAccountActivity() {
+  renderAccountTransfers() {
     const {currentAccountTransfers} = this.props
     if (currentAccountTransfers.length === 0) {
       return <div>No transfers recorded.</div>
@@ -130,12 +131,14 @@ class App extends Component {
   }
 
   renderGiftKittenModal() {
-    if (!this.state.giftKittenModalShowing) {
+    if (!this.state.giftKittenModalShowing || !this.state.giftKitten) {
       return null
     }
     return (
       <Dialog open={this.state.giftKittenModalShowing} fullWidth>
-        <DialogTitle>Send kitten as a gift</DialogTitle>
+        <DialogTitle>
+          Send {this.state.giftKitten.name || this.state.giftKitten.id} as a gift
+        </DialogTitle>
         <DialogContent>
           <KittenGiftForm
             kitten={this.state.giftKitten}

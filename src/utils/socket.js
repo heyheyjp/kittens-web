@@ -12,7 +12,7 @@ socket.on('error', error => console.warn(error.message))
 export function subscribeToChannel(channelName, channelOptions) {
   if (socket && channelName) {
     const {onData = () => {}} = channelOptions || {}
-    console.log(`Subscribing to results for ${channelName} ...`)
+    console.log(`Subscribing to results for ${channelName}...`)
     const channel = socket.subscribe(channelName)
     channel.watch(results => onData(results))
   } else {
@@ -22,7 +22,7 @@ export function subscribeToChannel(channelName, channelOptions) {
 
 export function unsubscribeFromChannel(channelName, channelOptions) {
   if (socket) {
-    console.log(`Unsubscribing from results for ${channelName} ...`)
+    console.log(`Unsubscribing from results for ${channelName}...`)
     socket.unwatch(channelName)
     socket.unsubscribe(channelName)
   } else {
